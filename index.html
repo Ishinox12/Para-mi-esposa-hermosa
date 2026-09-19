@@ -135,20 +135,23 @@
     letter-spacing:.16em;text-transform:uppercase;color:rgba(255,240,200,.75);
     animation:pulseHint 2s ease-in-out infinite;width:max-content}
 
-  /* ------- CARTA (con backdrop-filter como el original) ------- */
-  .letter{position:fixed;inset:0;z-index:8;display:grid;place-items:center;
-    padding:calc(14px + var(--safe-t)) 14px calc(14px + var(--safe-b));
+  /* ------- CARTA (aparece justo sobre el sobre) ------- */
+  .letter{position:fixed;inset:0;z-index:8;
     opacity:0;pointer-events:none;transition:opacity .7s ease;
     backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
     background:rgba(18,4,20,.45);}
   .letter.show{opacity:1;pointer-events:auto}
-  .paper{width:min(660px,94vw);max-height:82vh;max-height:82dvh;overflow-y:auto;border-radius:18px;
+  .paper{position:absolute;
+    left:50%;top:50%;
+    width:min(660px,94vw);max-height:82vh;max-height:82dvh;overflow-y:auto;border-radius:18px;
     -webkit-overflow-scrolling:touch;
     padding:clamp(20px,4.6vw,42px);background:linear-gradient(180deg,#fffdf7,#fdf3dd);
     color:#5a2a34;box-shadow:0 30px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.6),0 0 70px rgba(255,196,90,.35);
-    transform:scale(.6) translateY(60px) rotate(-2deg);
-    transition:transform .85s cubic-bezier(.2,1.1,.3,1);text-align:left;}
-  .letter.show .paper{transform:scale(1) translateY(0) rotate(0)}
+    transform:translate(-50%,-50%) scale(.4) rotate(-2deg);
+    transform-origin:center center;
+    transition:transform .85s cubic-bezier(.2,1.1,.3,1), left .85s cubic-bezier(.2,1.1,.3,1), top .85s cubic-bezier(.2,1.1,.3,1);
+    text-align:left;}
+  .letter.show .paper{transform:translate(-50%,-50%) scale(1) rotate(0)}
   .paper::-webkit-scrollbar{width:6px}
   .paper::-webkit-scrollbar-thumb{background:#e8c27a;border-radius:9px}
   .paper h2{font-family:'Great Vibes',cursive;font-size:clamp(28px,6vw,46px);margin:0 0 12px;
@@ -273,11 +276,7 @@
   #musicBtn.on .bars i:nth-child(4){animation-delay:.45s}
   @keyframes eq{0%,100%{height:5px}50%{height:14px}}
 
-  /* ================================================
-     AJUSTES MÓVIL (conservando sombras, backdrop y efectos)
-     ================================================ */
   @media (max-width:820px), (hover:none){
-    /* Layout apilado limpio */
     .intro-row{flex-direction:column;gap:14px}
     .boy-wrap{width:min(300px,80vw)}
     .envelope{width:min(320px,84vw);height:min(215px,58vw)}
@@ -292,14 +291,12 @@
     .hint{font-size:clamp(20px,5.6vw,32px)}
   }
 
-  /* Accesibilidad: respeta "reducir movimiento" */
   @media (prefers-reduced-motion: reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
       transition-duration:.15s!important}
     .petal{display:none}
   }
 
-  /* Pausa global cuando la pestaña está oculta (ahorro batería) */
   body.paused *,body.paused *::before,body.paused *::after{
     animation-play-state:paused!important;
   }
@@ -427,7 +424,7 @@ cargar(document.getElementById('fotoA'), [FOTO_ENTREGA, 'foto-entrega.png', 'fot
 cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'foto-abrazo.jpeg']);
 
 /* =========================================================
-   2) FONDO: estrellas, luces y destellos (COMPLETOS)
+   2) FONDO: estrellas, luces y destellos
    ========================================================= */
 (function(){
   const cvs = document.getElementById('sky'), ctx = cvs.getContext('2d', {alpha:true});
@@ -444,7 +441,6 @@ cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'fot
       col: Math.random()>0.45 ? '255,200,110' : '255,150,190' });
 
   function reseed(){
-    // Cantidades completas, como el original
     stars  = Array.from({length: Math.min(260, Math.round((W*H)/9000))}, makeStar);
     lights = Array.from({length: 14}, makeLight);
   }
@@ -465,7 +461,6 @@ cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'fot
     if(!running) return;
     t += 0.016; ctx.clearRect(0,0,W,H);
 
-    // Luces suaves
     for(const l of lights){
       l.y -= l.vy; l.x += l.vx;
       if(l.y < -l.r){ l.y = H + l.r; l.x = Math.random()*W; }
@@ -478,7 +473,6 @@ cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'fot
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(l.x,l.y,l.r,0,Math.PI*2); ctx.fill();
     }
 
-    // Estrellas (con halo completo)
     for(const s of stars){
       s.y -= s.vy; s.x += s.vx;
       if(s.y < -4){ s.y = H+4; s.x = Math.random()*W; }
@@ -494,7 +488,6 @@ cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'fot
       }
     }
 
-    // Estrellas fugaces (completas)
     if(Math.random() < 0.004 && shots.length < 3)
       shots.push({x:Math.random()*W*0.7,y:Math.random()*H*0.4,vx:5+Math.random()*4,vy:1.6+Math.random()*1.4,life:1});
 
@@ -513,7 +506,6 @@ cargar(document.getElementById('fotoB'), [FOTO_ABRAZO,  'foto-abrazo.png',  'fot
   }
   requestAnimationFrame(draw);
 
-  // Pausa el canvas cuando la pestaña no está visible
   document.addEventListener('visibilitychange', ()=>{
     if(document.hidden){
       running = false;
@@ -615,7 +607,6 @@ const Sound = {
 };
 musicBtn.addEventListener('click', ()=>{ Sound.on ? Sound.stop() : Sound.start(); });
 
-/* Pausar audio si el usuario cambia de app (no afecta estética) */
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
     if(Sound.on && !audioEl.paused) audioEl.pause();
@@ -625,7 +616,7 @@ document.addEventListener('visibilitychange', ()=>{
 });
 
 /* =========================================================
-   4) CORAZÓN: destellos en órbita (COMPLETOS: 8)
+   4) CORAZÓN: destellos en órbita
    ========================================================= */
 (function(){
   const orbit = document.getElementById('orbit');
@@ -641,7 +632,7 @@ document.addEventListener('visibilitychange', ()=>{
 })();
 
 /* =========================================================
-   5) PÉTALOS AMARILLOS CAYENDO (COMPLETOS: 20)
+   5) PÉTALOS AMARILLOS CAYENDO
    ========================================================= */
 function makePetals(){
   const box = document.getElementById('petals');
@@ -680,7 +671,7 @@ const Escena = (function(){
 
   function soltarFlores(){
     fLayer.innerHTML = '';
-    for(let i=0;i<18;i++){ // cantidad original completa
+    for(let i=0;i<18;i++){
       const f = document.createElement('div');
       f.className = 'flower';
       f.textContent = ['🌼','🌻','💛','✨','🌼','🌾'][i%6];
@@ -695,7 +686,7 @@ const Escena = (function(){
   }
   function brotarCorazones(){
     hLayer.innerHTML = '';
-    for(let i=0;i<12;i++){ // cantidad original completa
+    for(let i=0;i<12;i++){
       const h = document.createElement('div');
       h.className = 'pop';
       h.textContent = ['💖','💛','💕','✨','💗','🌟'][i%6];
@@ -758,6 +749,41 @@ const Escena = (function(){
     boyWrap.classList.add('giving');
     setTimeout(()=> boyWrap.classList.remove('giving'), 1000);
 
+    // 🎯 Medir el papel y colocar la carta justo encima del sobre
+    const paper = letter.querySelector('.paper');
+
+    // Medimos el tamaño real del papel (con transform neutro temporal)
+    const prevVis = paper.style.visibility;
+    const prevL = paper.style.left, prevT = paper.style.top, prevTr = paper.style.transform;
+    paper.style.visibility = 'hidden';
+    paper.style.left = '0px';
+    paper.style.top  = '0px';
+    paper.style.transform = 'none';
+    const pw = paper.offsetWidth;
+    const ph = Math.min(paper.offsetHeight, window.innerHeight * 0.82);
+    paper.style.visibility = prevVis;
+    paper.style.left = prevL;
+    paper.style.top  = prevT;
+    paper.style.transform = prevTr;
+
+    // Centro del sobre en pantalla
+    const rect  = env.getBoundingClientRect();
+    const envCx = rect.left + rect.width  / 2;
+    const envCy = rect.top  + rect.height / 2;
+
+    // Clampear para que la carta no se salga de la pantalla
+    const pad   = 14;
+    const vw    = window.innerWidth;
+    const vh    = window.innerHeight;
+    const halfW = pw / 2;
+    const halfH = ph / 2;
+
+    let cx = Math.min(Math.max(envCx, pad + halfW), vw - pad - halfW);
+    let cy = Math.min(Math.max(envCy, pad + halfH), vh - pad - halfH);
+
+    paper.style.left = cx + 'px';
+    paper.style.top  = cy + 'px';
+
     setTimeout(()=>{
       env.classList.add('open');
       setTimeout(()=> letter.classList.add('show'), 620);
@@ -785,7 +811,6 @@ const Escena = (function(){
     }, 2350);
   });
 
-  // Pausar TODAS las animaciones CSS cuando la pestaña está oculta (ahorro batería real)
   document.addEventListener('visibilitychange', ()=>{
     document.body.classList.toggle('paused', document.hidden);
   });
